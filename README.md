@@ -8,33 +8,25 @@ This project is prepared for Machine Learning Assignment 2 as part of the M.Tech
 
 ## 2. Dataset Description
 
-For the default demonstration, this project uses the Wisconsin Diagnostic Breast Cancer dataset, which is available through `scikit-learn` and based on the UCI Machine Learning Repository dataset.
+This project uses the NPHA doctor visits classification dataset.
 
 - Dataset type: Classification
-- Classification type: Binary classification
-- Number of instances: 569
-- Number of input features: 30
-- Target column: `diagnosis`
-- Target classes: `benign`, `malignant`
+- File name: `NPHA-doctor-visits.csv`
+- Target column: Update this based on the final target column used in your notebook/app
+- Minimum requirement: The dataset should contain at least 500 instances and 12 features
 
-The dataset satisfies the assignment requirement of at least 500 instances and at least 12 features.
-
-Users can also upload their own CSV classification dataset through the Streamlit app. The uploaded dataset should contain one target column and multiple feature columns.
+Users can also upload a CSV classification dataset through the Streamlit app. The uploaded dataset should contain one target column and multiple feature columns.
 
 ## 3. GitHub Repository Link
 
-Replace this placeholder with your GitHub repository link after uploading the project:
-
 ```text
-https://github.com/your-username/your-repository-name
+https://github.com/2025ac05196-art/ML-Assignment-2
 ```
 
 ## 4. Live Streamlit App Link
 
-Replace this placeholder with your deployed Streamlit Community Cloud link:
-
 ```text
-https://your-app-name.streamlit.app/
+https://fsiwefw4bfvmrtc82f3yjp.streamlit.app/
 ```
 
 ## 5. Models Used
@@ -74,12 +66,12 @@ After running the Streamlit application, copy the calculated metric values from 
 
 | ML Model Name | Observation about Model Performance |
 |---|---|
-| Logistic Regression | Usually performs well when the decision boundary is approximately linear. It is fast, interpretable, and effective for the default breast cancer dataset after feature scaling. |
-| Decision Tree | Easy to interpret but may overfit if the tree becomes too deep. Performance can vary depending on the train-test split. |
-| K-Nearest Neighbors | Sensitive to feature scaling and the value of K. It may perform well on clean datasets but can become slower for large datasets. |
-| Naive Bayes | Fast and simple. It assumes conditional independence between features, so performance may be lower when features are strongly correlated. |
-| Random Forest | Usually gives strong performance because it combines multiple decision trees and reduces overfitting compared with a single tree. |
-| Overall Winner for This Dataset | Update this after reviewing the metric table. The best model is usually the one with the highest F1, AUC, and MCC scores. |
+| Logistic Regression | Performs well when the relationship between features and target is approximately linear. It is fast and interpretable. |
+| Decision Tree | Easy to interpret but may overfit if the tree becomes too complex. |
+| K-Nearest Neighbors | Sensitive to feature scaling and the value of K. Works well when similar records belong to similar classes. |
+| Naive Bayes | Fast and simple. It assumes feature independence, so performance may reduce when features are highly correlated. |
+| Random Forest | Generally provides strong results because it combines multiple decision trees and reduces overfitting. |
+| Overall Winner for This Dataset | Update this after checking the metric table. The best model should have strong F1, AUC, and MCC values. |
 
 ## 9. Streamlit App Features
 
@@ -91,20 +83,23 @@ The Streamlit app includes the following required features:
 - Evaluation metrics display
 - Confusion matrix display
 - Classification report display
-- Default dataset fallback when no CSV file is uploaded
 
 ## 10. Project Structure
 
 ```text
 project-folder/
-│-- app.py
-│-- requirements.txt
-│-- README.md
-│-- test_data.csv
-│-- model/
+|-- app.py
+|-- requirements.txt
+|-- README.md
+|-- NPHA-doctor-visits.csv
+|-- train_models.ipynb
 ```
 
-Note: If you save trained model files separately, place them inside the `model/` folder.
+If a separate test dataset is created, keep it as:
+
+```text
+test_data.csv
+```
 
 ## 11. How to Run Locally
 
