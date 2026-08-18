@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import joblib
+from pathlib import Path
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder, label_binarize
@@ -39,6 +41,7 @@ st.write(
 )
 
 RANDOM_STATE = 42
+MODEL_DIR = Path("model")  # ✅ UPDATED: Changed from "models" to "model"
 
 
 @st.cache_data
@@ -49,6 +52,31 @@ def load_npha_dataset():
         return df
     except:
         return None
+
+
+@st.cache_resource  # ✅ NEW: Cache loaded models
+def load_pretrained_models():
+    """Load pre-trained models from model/ folder."""
+    models = {}
+    if not MODEL_DIR.exists():
+        return None
+    
+    model_files = {
+        "Logistic Regression": MODEL_DIR / "logistic_regression.joblib",
+        "Decision Tree": MODEL_DIR / "decision_tree.joblib",
+        "K-Nearest Neighbors": MODEL_DIR / "k_nearest_neighbors.joblib",
+        "Naive Bayes": MODEL_DIR / "naive_bayes.joblib",
+        "Random Forest": MODEL_DIR / "random_forest.joblib",
+    }
+    
+    for model_name, model_path in model_files.items():
+        if model_path.exists():
+            try:
+                models[model_name] = joblib.load(model_path)
+            except Exception as e:
+                st.warning(f"Could not load {model_name}: {e}")
+    
+    return models if models else None
 
 
 def build_preprocessor(X):
