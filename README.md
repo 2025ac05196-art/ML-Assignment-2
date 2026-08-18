@@ -98,17 +98,27 @@ The Streamlit app includes the following required features:
 - Dataset statistics (number of rows, columns, and target column name)
 - Automatic data preprocessing including missing value imputation and feature scaling
 - Error handling for invalid datasets
+- Download button to export metrics as CSV
 
 ## 10. Project Structure
 
 ```text
 ML-Assignment-2/
-|-- app.py                          (Streamlit web application)
-|-- train_models.ipynb               (Jupyter notebook with model training code)
-|-- requirements.txt                 (Python dependencies)
-|-- README.md                        (This file)
-|-- test_data.csv                    (Test dataset with 50 samples from NPHA data)
-|-- model_comparison_results.csv     (Saved results table)
+|-- app.py                              (Streamlit web application)
+|-- save_models.py                      (Script to train and save models)
+|-- train_models.ipynb                  (Jupyter notebook with model training code)
+|-- requirements.txt                    (Python dependencies)
+|-- README.md                           (This file)
+|-- test_data.csv                       (Test dataset with 50 samples from NPHA data)
+|-- model_comparison_results.csv        (Saved results table)
+|-- models/                             (Directory containing saved trained models)
+    |-- logisticregressionmodel.joblib  (Trained Logistic Regression model)
+    |-- decisiontreeclassifier.joblib   (Trained Decision Tree model)
+    |-- kneighborsclassifier.joblib     (Trained KNN model)
+    |-- naivebayes.joblib               (Trained Naive Bayes model)
+    |-- randomforest.joblib             (Trained Random Forest model)
+    |-- metadata.joblib                 (Model metadata and training info)
+    |-- index.joblib                    (Index of all saved models)
 ```
 
 ## 11. How to Run Locally
@@ -136,12 +146,23 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. **Run the Streamlit App**:
+4. **Train and Save Models** (Optional - Pre-trains all models):
+```bash
+python save_models.py
+```
+This will:
+- Load the NPHA dataset
+- Train all 5 models
+- Save trained models to `models/` directory
+- Generate model metadata and index
+- Display performance metrics
+
+5. **Run the Streamlit App**:
 ```bash
 streamlit run app.py
 ```
 
-5. **Access the App**: 
+6. **Access the App**: 
 - Opens automatically in browser at `http://localhost:8501`
 - Or manually navigate to that URL
 
@@ -149,9 +170,56 @@ streamlit run app.py
 - Upload a CSV file or use the default dataset
 - Select the target column for classification
 - Choose a machine learning model from the dropdown
+- Click "🚀 Train & Evaluate Models" button
 - View results including metrics, confusion matrix, and classification report
+- Download metrics as CSV if needed
 
-## 12. Deployment on Streamlit Community Cloud
+## 12. Working with Saved Models
+
+### Using Pre-trained Models
+
+The `save_models.py` script trains and saves all models with their preprocessing pipelines.
+
+**Load a specific model**:
+```python
+import joblib
+
+# Load a trained model
+model = joblib.load('models/logisticregressionmodel.joblib')
+
+# Use the model for predictions
+predictions = model.predict(X_test)
+```
+
+**Load model metadata**:
+```python
+import joblib
+
+# Load metadata (target column, features, etc.)
+metadata = joblib.load('models/metadata.joblib')
+print(metadata['target_column'])
+print(metadata['classes'])
+print(metadata['num_features'])
+```
+
+**Load model index**:
+```python
+import joblib
+
+# Load index of all models
+index = joblib.load('models/index.joblib')
+print(index['trained_models'])
+print(index['model_files'])
+```
+
+### Model Serialization Details
+
+- **Format**: joblib (.joblib files)
+- **Includes**: Complete scikit-learn pipelines with preprocessing
+- **Size**: ~100KB per model
+- **Compatibility**: Compatible with scikit-learn 0.20+
+
+## 13. Deployment on Streamlit Community Cloud
 
 ### Prerequisites
 - GitHub account with the repository pushed
@@ -171,7 +239,7 @@ streamlit run app.py
 
 **Live App URL**: https://fsiwefw4bfvmrtc82f3yjp.streamlit.app/
 
-## 13. Dependencies
+## 14. Dependencies
 
 All required packages are specified in `requirements.txt`:
 - `streamlit` - Web app framework
@@ -182,17 +250,24 @@ All required packages are specified in `requirements.txt`:
 - `seaborn` - Statistical visualization
 - `joblib` - Model serialization
 
-## 14. Files Description
+Install with:
+```bash
+pip install -r requirements.txt
+```
+
+## 15. Files Description
 
 | File | Description |
 |---|---|
 | `app.py` | Main Streamlit application with UI, model training, and evaluation |
+| `save_models.py` | Script to train and save all models with joblib serialization |
 | `train_models.ipynb` | Jupyter notebook with exploratory analysis and model training code |
 | `requirements.txt` | Python package dependencies |
 | `test_data.csv` | Sample dataset (50 rows from NPHA data) for testing |
 | `README.md` | Project documentation (this file) |
+| `models/` | Directory containing trained model files and metadata |
 
-## 15. Key Implementation Details
+## 16. Key Implementation Details
 
 ### Data Preprocessing Pipeline
 - **Missing Value Handling**: Simple imputation with median for numerical features and most frequent value for categorical features
@@ -211,8 +286,9 @@ All required packages are specified in `requirements.txt`:
 - **AUC Calculation**: One-vs-Rest (OvR) approach for multi-class problems
 - **Averaging Strategy**: Weighted average for precision, recall, and F1 (accounts for class imbalance)
 - **Train-Test Validation**: Cross-validation applied during model development
+- **Model Persistence**: joblib used for efficient serialization
 
-## 16. Troubleshooting
+## 17. Troubleshooting
 
 ### Common Issues
 
@@ -223,8 +299,10 @@ All required packages are specified in `requirements.txt`:
 | **CSV upload fails** | Ensure CSV has headers and contains numeric/categorical data only |
 | **Models don't train** | Verify target column has at least 2 classes and dataset is properly formatted |
 | **Deployment fails on Streamlit Cloud** | Check that `requirements.txt` includes all packages; remove unnecessary dependencies |
+| **save_models.py fails** | Ensure `test_data.csv` is in the project root directory |
+| **Model files not found** | Run `python save_models.py` to generate model files in `models/` directory |
 
-## 17. Final Submission Checklist
+## 18. Final Submission Checklist
 
 ✅ GitHub repository link works and contains all required files
 ✅ Streamlit app link opens correctly and is fully functional
@@ -241,6 +319,10 @@ All required packages are specified in `requirements.txt`:
 ✅ Observations on model performance are provided for each model
 ✅ Project structure follows assignment requirements
 ✅ requirements.txt is complete with no missing dependencies
+✅ Trained models saved with joblib in `models/` directory
+✅ Model metadata and index files created
+✅ save_models.py script for training and saving models included
+❌ BITS Lab screenshot (To be added by user before final submission)
 
 ---
 
