@@ -2,61 +2,81 @@
 
 ## 1. Problem Statement
 
-The objective of this project is to build an interactive machine learning web application that compares multiple classification algorithms on the same dataset. The application allows users to upload a classification dataset, select the target column, choose a machine learning model, and view evaluation metrics including accuracy, precision, recall, F1 score, AUC score, and Matthews Correlation Coefficient. This demonstrates the complete end-to-end ML deployment workflow: modeling, evaluation, UI design, and deployment on Streamlit Community Cloud.
+This project implements and compares five classification algorithms on the same public dataset and provides an interactive Streamlit application for evaluating the saved models on held-out test data. The application reports Accuracy, AUC, Precision, Recall, F1 Score, Matthews Correlation Coefficient (MCC), a confusion matrix, and a classification report.
 
-This project is prepared for Machine Learning Assignment 2 as part of the M.Tech AIML/DSE Work Integrated Learning Programme.
+The workflow covers dataset preparation, leakage-safe preprocessing, model training, evaluation, model serialization, UI development, and deployment with Streamlit Community Cloud.
 
 ## 2. Dataset Description
 
-This project uses the NPHA (National Public Health Association) Doctor Visits classification dataset.
+This project uses the **National Poll on Healthy Aging (NPHA)** dataset from the UCI Machine Learning Repository.
 
-- **Dataset Type**: Multi-class Classification
-- **Target Variable**: "Number of Doctors Visited" (Classification target)
-- **Number of Instances**: 714 samples (exceeds minimum requirement of 500)
-- **Number of Features**: 14 features (exceeds minimum requirement of 12)
-- **Feature Names**: Age, Physical Health, Mental Health, Dental Health, Employment, Stress Keeps Patient from Sleeping, Medication Keeps Patient from Sleeping, Pain Keeps Patient from Sleeping, Bathroom Visits, Sleep Difficulty, Doctor Visits Frequency, Medication Usage, Healthcare Access, and Insurance Status
-- **Data Preprocessing**: Missing values (represented as -1) are handled by replacing with modal values
-- **Train-Test Split**: 80-20 split with stratification to maintain class distribution
-- **Feature Scaling**: StandardScaler applied for models requiring scaled features
+- **Dataset source:** [UCI Machine Learning Repository — National Poll on Healthy Aging](https://archive.ics.uci.edu/dataset/936/national+poll+on+healthy+aging+%28npha%29)
+- **Dataset type:** Tabular, multi-class classification
+- **Instances:** 714
+- **Predictor features:** 14
+- **Target column:** `Number of Doctors Visited`
+- **Target classes:**
+  - `1`: 0–1 doctors
+  - `2`: 2–3 doctors
+  - `3`: 4 or more doctors
 
-Users can also upload their own CSV classification dataset through the Streamlit app. The uploaded dataset should contain one target column and multiple feature columns (minimum 12 features and 500 instances recommended for robust evaluation).
+### Predictor columns used
 
-## 3. GitHub Repository Link
+1. `Age`
+2. `Phyiscal Health`
+3. `Mental Health`
+4. `Dental Health`
+5. `Employment`
+6. `Stress Keeps Patient from Sleeping`
+7. `Medication Keeps Patient from Sleeping`
+8. `Pain Keeps Patient from Sleeping`
+9. `Bathroom Needs Keeps Patient from Sleeping`
+10. `Uknown Keeps Patient from Sleeping`
+11. `Trouble Sleeping`
+12. `Prescription Sleep Medication`
+13. `Race`
+14. `Gender`
 
-```text
-https://github.com/2025ac05196-art/ML-Assignment-2
-```
+The spellings above match the source CSV column names.
 
-## 4. Live Streamlit App Link
+### Preprocessing
 
-```text
-https://fsiwefw4bfvmrtc82f3yjp.streamlit.app/
-```
+- Empty rows and empty columns are removed.
+- Refused-response values encoded as `-1` in predictor columns are converted to missing values.
+- The data is split once using an **80:20 stratified train-test split** with `random_state=42`.
+- Preprocessing is fitted only on the training partition.
+- Numerical values are imputed with the training median and standardized.
+- Categorical values are imputed with the most frequent training value and one-hot encoded.
+- The target column is excluded from all preprocessing and predictor matrices.
+- The held-out partition is saved as `test_data.csv` and is not used to fit the models.
 
-## 5. Models Used
+## 3. Project Links
 
-The following five classification models are implemented and trained on the NPHA dataset:
+- **GitHub Repository:** [ML Assignment 2 Repository](https://github.com/2025ac05196-art/ML-Assignment-2)
+- **Live Streamlit Application:** [Open the Streamlit App](https://fsiwefw4bfvmrtc82f3yjp.streamlit.app/)
 
-1. **Logistic Regression**: A linear model for binary and multi-class classification. Works well when the relationship between features and target is approximately linear.
-2. **Decision Tree Classifier**: A non-parametric model that recursively splits the feature space. Easy to interpret but prone to overfitting.
-3. **K-Nearest Neighbors (KNN) Classifier**: An instance-based learning algorithm that classifies based on the majority class of K nearest neighbors. Sensitive to feature scaling.
-4. **Naive Bayes Classifier (Gaussian)**: A probabilistic classifier based on Bayes' theorem. Assumes conditional independence of features.
-5. **Random Forest Classifier**: An ensemble model combining multiple decision trees with bootstrap aggregating. Generally provides strong results and reduces overfitting.
+## 4. Models Used
 
-## 6. Evaluation Metrics
+1. **Logistic Regression** — linear probabilistic baseline for multi-class classification.
+2. **Decision Tree Classifier** — non-parametric tree model.
+3. **K-Nearest Neighbors Classifier** — distance-based instance classifier.
+4. **Gaussian Naive Bayes Classifier** — probabilistic classifier based on conditional independence.
+5. **Random Forest Classifier** — ensemble of decision trees.
 
-Each model is evaluated using the following six metrics:
+## 5. Evaluation Metrics
 
-- **Accuracy**: Proportion of correctly classified instances out of total instances
-- **AUC Score**: Area Under the Receiver Operating Characteristic Curve (averaged using One-vs-Rest for multi-class)
-- **Precision**: Proportion of true positives among predicted positives (weighted average for multi-class)
-- **Recall**: Proportion of true positives among actual positives (weighted average for multi-class)
-- **F1 Score**: Harmonic mean of precision and recall (weighted average for multi-class)
-- **Matthews Correlation Coefficient (MCC)**: Correlation coefficient between predicted and actual classes
+Every model is evaluated on the same held-out test partition using:
 
-## 7. Model Comparison Table
+- Accuracy
+- Multi-class AUC using weighted One-vs-Rest
+- Weighted Precision
+- Weighted Recall
+- Weighted F1 Score
+- Matthews Correlation Coefficient (MCC)
 
-Results of model evaluation on the NPHA Doctor Visits test dataset (20% of 714 instances = ~143 samples):
+## 6. Model Comparison Results
+
+The following values are the previously recorded results. Re-run `save_models.py` and update this table if the dataset or package versions change.
 
 | ML Model Name | Accuracy | AUC | Precision | Recall | F1 Score | MCC |
 |---|---:|---:|---:|---:|---:|---:|
@@ -66,268 +86,105 @@ Results of model evaluation on the NPHA Doctor Visits test dataset (20% of 714 i
 | Naive Bayes | 0.2937 | 0.6217 | 0.4633 | 0.2937 | 0.2510 | 0.1427 |
 | Random Forest | 0.5035 | 0.5600 | 0.4587 | 0.5035 | 0.4593 | 0.0942 |
 
-## 8. Observations on Model Performance
+## 7. Performance Observations
 
-| ML Model Name | Observation about Model Performance |
-|---|---|
-| **Logistic Regression** | Achieved the highest accuracy (0.5524) and F1 score (0.4487) among all models. This indicates that the relationship between features and the target variable is sufficiently linear for logistic regression to perform well. The model is computationally efficient and interpretable. However, the AUC score of 0.6161 suggests moderate discriminative ability. |
-| **Decision Tree** | Performed poorly with the lowest accuracy (0.3566) and AUC score (0.4630), and a negative MCC (-0.0585) indicating worse-than-random performance. This suggests the decision tree either overfitted to training data or the feature space is too complex to partition effectively with axis-aligned splits. Deeper trees or pruning strategies might improve performance. |
-| **K-Nearest Neighbors** | Achieved moderate performance with accuracy of 0.4965 and F1 score of 0.4683. The model shows reasonable precision (0.4854) but slightly lower recall. The KNN algorithm's performance is sensitive to feature scaling (StandardScaler was applied) and the choice of K (set to 5). Tuning K or using distance weighting might enhance results. |
-| **Naive Bayes** | Despite the lowest accuracy (0.2937) and recall (0.2937), it surprisingly achieved the second-highest AUC score (0.6217). This indicates strong probabilistic ranking ability but poor hard classifications. The model's assumption of feature independence may be violated in this dataset, where health-related features are likely correlated. The high AUC relative to accuracy suggests the model ranks predictions well but thresholds need adjustment. |
-| **Random Forest** | Achieved accuracy of 0.5035 with reasonable AUC (0.5600) and F1 score (0.4593). The ensemble approach combining 100 decision trees provides stability, though performance is slightly below Logistic Regression. The model benefits from feature interactions captured by its constituent trees, though the moderate MCC (0.0942) suggests limited correlation improvement over random guessing. |
-| **Overall Winner for This Dataset** | **Logistic Regression** is the best-performing model for the NPHA Doctor Visits dataset based on primary metrics (Accuracy: 0.5524, F1: 0.4487, and MCC: 0.1547). The model offers the best balance between accuracy, precision, recall, and F1 score. While Naive Bayes has a slightly higher AUC (0.6217), its significantly lower accuracy and recall make it unsuitable for this classification task. Logistic Regression is recommended for deployment due to its interpretability, computational efficiency, and superior overall performance. |
+### Logistic Regression
 
-## 9. Streamlit App Features
+Logistic Regression achieved the highest recorded accuracy, recall, and MCC. Its AUC indicates moderate class-discrimination ability. It is selected as the overall model because it provides the strongest balance under the primary criteria and is computationally efficient and interpretable.
 
-The Streamlit app includes the following required features:
+### Decision Tree
 
-✅ **CSV Dataset Upload Option**: Users can upload their own classification dataset (CSV format). Default dataset (UCI Breast Cancer) is provided if no file is uploaded.
+The Decision Tree produced the lowest AUC and a negative MCC, suggesting weak generalization on the held-out split. Depth control, minimum leaf size, pruning, and cross-validated hyperparameter tuning may improve performance.
 
-✅ **Target Column Selection Dropdown**: Users can select any column from the uploaded dataset as the target variable for classification.
+### K-Nearest Neighbors
 
-✅ **Model Selection Dropdown**: Users can choose from five implemented classification models (Logistic Regression, Decision Tree, KNN, Naive Bayes, Random Forest).
+KNN achieved the highest recorded precision and F1 score. Because it is sensitive to feature scale, all transformed numerical inputs are standardized. Tuning the number of neighbors, distance measure, and weighting strategy may improve results.
 
-✅ **Evaluation Metrics Display**: A comprehensive table showing all six evaluation metrics (Accuracy, AUC, Precision, Recall, F1 Score, MCC) for all five models.
+### Naive Bayes
 
-✅ **Confusion Matrix Display**: A formatted confusion matrix showing true positives, true negatives, false positives, and false negatives for the selected model.
+Naive Bayes achieved the highest recorded AUC but low accuracy and recall. Its probability ranking was more useful than its final class assignments. Correlated health attributes may weaken the model's conditional-independence assumption.
 
-✅ **Classification Report Display**: A detailed classification report showing precision, recall, and F1 score per class, plus macro and weighted averages.
+### Random Forest
 
-**Additional Features**:
-- Dataset preview showing first 10 rows
-- Dataset statistics (number of rows, columns, and target column name)
-- Automatic data preprocessing including missing value imputation and feature scaling
-- Error handling for invalid datasets
-- Download button to export metrics as CSV
+Random Forest performed better than the single Decision Tree, indicating that the ensemble improved stability. Its MCC remained limited; tuning tree depth, feature sampling, class weights, and the number of estimators may help.
 
-## 10. Project Structure
+### Overall Winner
+
+**Logistic Regression** is selected as the overall winner because it achieved the highest recorded accuracy, recall, and MCC. KNN achieved the highest precision and F1 score, while Naive Bayes achieved the highest AUC; therefore, no model dominated every metric.
+
+## 8. Streamlit Application Features
+
+- Use the generated held-out `test_data.csv` or upload another compatible test CSV.
+- Select one of five saved models.
+- Compare all models on the same uploaded test dataset.
+- Display Accuracy, AUC, Precision, Recall, F1 Score, and MCC.
+- Display a confusion matrix and classification report for the selected model.
+- Download the comparison metrics as CSV.
+- Validate required columns and reject incompatible files.
+
+## 9. Repository Structure
 
 ```text
 ML-Assignment-2/
-|-- app.py                              (Streamlit web application)
-|-- save_models.py                      (Script to train and save models)
-|-- train_models.ipynb                  (Jupyter notebook with model training code)
-|-- requirements.txt                    (Python dependencies)
-|-- README.md                           (This file)
-|-- test_data.csv                       (Test dataset with 50 samples from NPHA data)
-|-- model_comparison_results.csv        (Saved results table)
-|-- models/                             (Directory containing saved trained models)
-    |-- logisticregressionmodel.joblib  (Trained Logistic Regression model)
-    |-- decisiontreeclassifier.joblib   (Trained Decision Tree model)
-    |-- kneighborsclassifier.joblib     (Trained KNN model)
-    |-- naivebayes.joblib               (Trained Naive Bayes model)
-    |-- randomforest.joblib             (Trained Random Forest model)
-    |-- metadata.joblib                 (Model metadata and training info)
-    |-- index.joblib                    (Index of all saved models)
+├── app.py
+├── save_models.py
+├── train_models.ipynb
+├── requirements.txt
+├── README.md
+├── NPHA-doctor-visits.csv
+├── test_data.csv
+├── model_comparison_results.csv
+└── models/
+    ├── logistic_regression.joblib
+    ├── decision_tree.joblib
+    ├── k_nearest_neighbors.joblib
+    ├── naive_bayes.joblib
+    ├── random_forest.joblib
+    ├── metadata.joblib
+    └── index.json
 ```
 
-## 11. How to Run Locally
+## 10. Running Locally
 
-### Prerequisites
-- Python 3.7 or higher
-- pip package manager
-
-### Installation and Execution
-
-1. **Clone the Repository**:
 ```bash
 git clone https://github.com/2025ac05196-art/ML-Assignment-2.git
 cd ML-Assignment-2
-```
-
-2. **Create Virtual Environment (Recommended)**:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install Dependencies**:
-```bash
-pip install -r requirements.txt
-```
-
-4. **Train and Save Models** (Optional - Pre-trains all models):
-```bash
+python -m pip install -r requirements.txt
 python save_models.py
-```
-This will:
-- Load the NPHA dataset
-- Train all 5 models
-- Save trained models to `models/` directory
-- Generate model metadata and index
-- Display performance metrics
-
-5. **Run the Streamlit App**:
-```bash
 streamlit run app.py
 ```
 
-6. **Access the App**: 
-- Opens automatically in browser at `http://localhost:8501`
-- Or manually navigate to that URL
+`save_models.py` expects `NPHA-doctor-visits.csv` in the project root. It creates the held-out `test_data.csv`, comparison CSV, and serialized model files.
 
-### Usage
-- Upload a CSV file or use the default dataset
-- Select the target column for classification
-- Choose a machine learning model from the dropdown
-- Click "🚀 Train & Evaluate Models" button
-- View results including metrics, confusion matrix, and classification report
-- Download metrics as CSV if needed
+## 11. Deployment on Streamlit Community Cloud
 
-## 12. Working with Saved Models
+1. Push the complete project to a public GitHub repository.
+2. Ensure the generated `models/` files and `test_data.csv` are committed.
+3. Open Streamlit Community Cloud.
+4. Create a new app from the repository.
+5. Select the `main` branch and `app.py`.
+6. Deploy and verify that the application loads without errors.
 
-### Using Pre-trained Models
+## 12. Assignment Compliance Summary
 
-The `save_models.py` script trains and saves all models with their preprocessing pipelines.
+- Public classification dataset with at least 500 instances
+- At least 12 predictor features
+- Five required classification models implemented on the same dataset
+- Six required evaluation metrics reported
+- Model comparison and model-wise observations included
+- CSV test-data option and model-selection control included
+- Confusion matrix and classification report included
+- GitHub and live Streamlit links included
+- Saved model files included
+- Held-out test partition is not used for fitting
 
-**Load a specific model**:
-```python
-import joblib
+## 13. Final Submission Note
 
-# Load a trained model
-model = joblib.load('models/logisticregressionmodel.joblib')
+The final submission PDF should contain these items in the required order:
 
-# Use the model for predictions
-predictions = model.predict(X_test)
-```
+1. Clickable GitHub repository link
+2. Clickable live Streamlit application link
+3. One readable screenshot showing execution on the BITS Virtual Lab
+4. The complete README content
 
-**Load model metadata**:
-```python
-import joblib
-
-# Load metadata (target column, features, etc.)
-metadata = joblib.load('models/metadata.joblib')
-print(metadata['target_column'])
-print(metadata['classes'])
-print(metadata['num_features'])
-```
-
-**Load model index**:
-```python
-import joblib
-
-# Load index of all models
-index = joblib.load('models/index.joblib')
-print(index['trained_models'])
-print(index['model_files'])
-```
-
-### Model Serialization Details
-
-- **Format**: joblib (.joblib files)
-- **Includes**: Complete scikit-learn pipelines with preprocessing
-- **Size**: ~100KB per model
-- **Compatibility**: Compatible with scikit-learn 0.20+
-
-## 13. Deployment on Streamlit Community Cloud
-
-### Prerequisites
-- GitHub account with the repository pushed
-- Streamlit Community Cloud account (free)
-
-### Deployment Steps
-
-1. Go to [Streamlit Community Cloud](https://streamlit.io/cloud)
-2. Sign in using your GitHub account
-3. Click on **"New app"**
-4. Select your repository: `2025ac05196-art/ML-Assignment-2`
-5. Select branch: `main` (or your default branch)
-6. Select main file: `app.py`
-7. Click **"Deploy"**
-8. Wait for the deployment to complete (usually 2-5 minutes)
-9. Copy the app URL and share it
-
-**Live App URL**: https://fsiwefw4bfvmrtc82f3yjp.streamlit.app/
-
-## 14. Dependencies
-
-All required packages are specified in `requirements.txt`:
-- `streamlit` - Web app framework
-- `pandas` - Data manipulation
-- `numpy` - Numerical computing
-- `scikit-learn` - Machine learning algorithms and metrics
-- `matplotlib` - Data visualization
-- `seaborn` - Statistical visualization
-- `joblib` - Model serialization
-
-Install with:
-```bash
-pip install -r requirements.txt
-```
-
-## 15. Files Description
-
-| File | Description |
-|---|---|
-| `app.py` | Main Streamlit application with UI, model training, and evaluation |
-| `save_models.py` | Script to train and save all models with joblib serialization |
-| `train_models.ipynb` | Jupyter notebook with exploratory analysis and model training code |
-| `requirements.txt` | Python package dependencies |
-| `test_data.csv` | Sample dataset (50 rows from NPHA data) for testing |
-| `README.md` | Project documentation (this file) |
-| `models/` | Directory containing trained model files and metadata |
-
-## 16. Key Implementation Details
-
-### Data Preprocessing Pipeline
-- **Missing Value Handling**: Simple imputation with median for numerical features and most frequent value for categorical features
-- **Feature Scaling**: StandardScaler applied to normalize numerical features (important for Logistic Regression and KNN)
-- **Categorical Encoding**: OneHotEncoder for categorical features
-- **Train-Test Split**: 75-25 split with stratification
-
-### Model Configuration
-- **Logistic Regression**: `max_iter=2000, random_state=42`
-- **Decision Tree**: Default parameters with `random_state=42`
-- **KNN**: `n_neighbors=5` (tunable parameter)
-- **Naive Bayes**: Gaussian variant for continuous features
-- **Random Forest**: `n_estimators=200, random_state=42`
-
-### Evaluation Methodology
-- **AUC Calculation**: One-vs-Rest (OvR) approach for multi-class problems
-- **Averaging Strategy**: Weighted average for precision, recall, and F1 (accounts for class imbalance)
-- **Train-Test Validation**: Cross-validation applied during model development
-- **Model Persistence**: joblib used for efficient serialization
-
-## 17. Troubleshooting
-
-### Common Issues
-
-| Issue | Solution |
-|---|---|
-| **ModuleNotFoundError** | Run `pip install -r requirements.txt` to install all dependencies |
-| **Streamlit app won't load** | Check that `app.py` exists and all imports are available |
-| **CSV upload fails** | Ensure CSV has headers and contains numeric/categorical data only |
-| **Models don't train** | Verify target column has at least 2 classes and dataset is properly formatted |
-| **Deployment fails on Streamlit Cloud** | Check that `requirements.txt` includes all packages; remove unnecessary dependencies |
-| **save_models.py fails** | Ensure `test_data.csv` is in the project root directory |
-| **Model files not found** | Run `python save_models.py` to generate model files in `models/` directory |
-
-## 18. Final Submission Checklist
-
-✅ GitHub repository link works and contains all required files
-✅ Streamlit app link opens correctly and is fully functional
-✅ App loads without errors
-✅ Dataset upload option works with both default and custom datasets
-✅ All model selection dropdowns function correctly
-✅ All six evaluation metrics are displayed accurately
-✅ Confusion matrix displays correctly for the selected model
-✅ Classification report shows detailed per-class metrics
-✅ README.md content is complete and formatted properly
-✅ All 5 required ML models are implemented
-✅ All 6 required evaluation metrics are calculated
-✅ Model comparison table with actual results is included
-✅ Observations on model performance are provided for each model
-✅ Project structure follows assignment requirements
-✅ requirements.txt is complete with no missing dependencies
-✅ Trained models saved with joblib in `models/` directory
-✅ Model metadata and index files created
-✅ save_models.py script for training and saving models included
-❌ BITS Lab screenshot (To be added by user before final submission)
-
----
-
-**Assignment Details**: M.Tech AIML/DSE, Work Integrated Learning Programme
-**Subject**: Machine Learning
-**Assignment**: Assignment 2 - Classification Models & Streamlit Deployment
-**Submission Deadline**: 18 August 2026
-**Total Marks**: 15 (Model Implementation: 10 | Streamlit App: 4 | BITS Lab Screenshot: 1)
+Before submission, verify that the repository is public, the deployed application opens correctly, all generated model files are present, both links are clickable, and the BITS Virtual Lab screenshot is readable.
