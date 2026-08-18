@@ -6,7 +6,7 @@ The objective of this project is to build an interactive machine learning web ap
 
 ## 2. Dataset Description
 
-This project uses the NPHA (National Poll on Healthy Aging) Doctor Visits classification dataset.
+This project uses the NPHA  (National Poll on Healthy Aging) Doctor Visits classification dataset.
 
 - **Dataset Type**: Multi-class Classification
 - **Target Variable**: "Number of Doctors Visited" (Classification target)
@@ -67,8 +67,8 @@ Results of model evaluation on the NPHA Doctor Visits held-out test dataset:
 
 | ML Model Name | Observation about Model Performance |
 |---|---|
-| **Logistic Regression** | Achieved the highest accuracy (0.5524) and F1 score (0.4487). The linear relationship between features and target is well-captured. Model is efficient and interpretable. |
-| **Decision Tree** | Performed poorly with the lowest accuracy (0.3566) and negative MCC. Suggests overfitting or complex feature interactions requiring non-linear partitioning. |
+| **Logistic Regression** | Achieved the highest accuracy (0.5524) and MCC (0.1547). Although its F1 score (0.4487) was lower than KNN and Random Forest, the model provided the best overall accuracy, positive prediction agreement, interpretability, and computational efficiency. |
+| **Decision Tree** | Performed relatively poorly, with the second-lowest accuracy (0.3566) and the lowest MCC (−0.0585). The negative MCC indicates weak agreement between the predicted and actual classes and may suggest overfitting or insufficient model tuning. |
 | **K-Nearest Neighbors** | Achieved moderate performance with accuracy of 0.4965. Performance is sensitive to feature scaling and K value. Could be improved with tuning. |
 | **Naive Bayes** | Lowest accuracy (0.2937) but surprisingly high AUC (0.6217). Feature independence assumption is violated. Strong ranking ability but poor hard classifications. |
 | **Random Forest** | Achieved accuracy of 0.5035 with reasonable AUC (0.5600). Ensemble approach provides stability, though below Logistic Regression. |
