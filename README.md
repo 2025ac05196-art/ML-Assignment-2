@@ -4,8 +4,6 @@
 
 The objective of this project is to build an interactive machine learning web application that compares multiple classification algorithms on the same dataset. The application allows users to evaluate pre-trained classification models, select the target column, and view comprehensive evaluation metrics including accuracy, precision, recall, F1 score, AUC score, and Matthews Correlation Coefficient. This demonstrates the complete end-to-end ML deployment workflow: modeling, evaluation, UI design, and deployment on Streamlit Community Cloud.
 
-This project is prepared for Machine Learning Assignment 2 as part of the M.Tech AIML/DSE Work Integrated Learning Programme.
-
 ## 2. Dataset Description
 
 This project uses the NPHA (National Public Health Association) Doctor Visits classification dataset.
@@ -94,132 +92,17 @@ The Streamlit app includes the following required features:
 - Error handling and validation
 - Download metrics as CSV
 
-## 10. Project Structure
+## 10. Assignment Compliance Summary
 
-```text
-ML-Assignment-2/
-|-- app.py                              (Streamlit application)
-|-- save_models.py                      (Script to train and save models)
-|-- train_models.ipynb                  (Jupyter notebook with analysis)
-|-- requirements.txt                    (Python dependencies)
-|-- README.md                           (This file)
-|-- test_data.csv                       (Held-out test dataset)
-|-- NPHA-doctor-visits.csv              (Full NPHA dataset)
-|-- model_comparison_results.csv        (Performance metrics)
-|-- models/                             (Saved trained models directory)
-    |-- logisticregressionmodel.joblib
-    |-- decisiontreeclassifier.joblib
-    |-- kneighborsclassifier.joblib
-    |-- naivebayes.joblib
-    |-- randomforest.joblib
-    |-- metadata.joblib
-    └── index.json
-```
-
-## 11. How to Run Locally
-
-### Prerequisites
-- Python 3.7 or higher
-- pip package manager
-
-### Installation and Execution
-
-1. **Clone the Repository**:
-```bash
-git clone https://github.com/2025ac05196-art/ML-Assignment-2.git
-cd ML-Assignment-2
-```
-
-2. **Create Virtual Environment**:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install Dependencies**:
-```bash
-pip install -r requirements.txt
-```
-
-4. **Run the Streamlit App**:
-```bash
-streamlit run app.py
-```
-
-5. **Access the App**: 
-Opens automatically at `http://localhost:8501`
-
-## 12. Deployment on Streamlit Community Cloud
-
-1. Go to [Streamlit Community Cloud](https://streamlit.io/cloud)
-2. Sign in using your GitHub account
-3. Click **"New app"**
-4. Select repository: `2025ac05196-art/ML-Assignment-2`
-5. Select branch: `main`
-6. Select main file: `app.py`
-7. Click **Deploy**
-
-**Live App**: https://fsiwefw4bfvmrtc82f3yjp.streamlit.app/
-
-## 13. Dependencies
-
-All packages in `requirements.txt`:
-```
-streamlit
-pandas
-numpy
-scikit-learn
-matplotlib
-seaborn
-joblib
-```
-
-## 14. Key Implementation Details
-
-### Data Preprocessing
-- Missing Value Handling: Median for numerical, most_frequent for categorical
-- Feature Scaling: StandardScaler for normalization
-- Categorical Encoding: OneHotEncoder with handle_unknown="ignore"
-- Train-Test Split: 80-20 split with stratification
-
-### Model Configuration
-- **Logistic Regression**: max_iter=2000
-- **Decision Tree**: random_state=42
-- **KNN**: n_neighbors=5
-- **Naive Bayes**: Gaussian variant
-- **Random Forest**: n_estimators=200
-
-## 15. Troubleshooting
-
-| Issue | Solution |
-|---|---|
-| **ModuleNotFoundError** | Run `pip install -r requirements.txt` |
-| **Streamlit app won't load** | Check that app.py exists and imports are available |
-| **CSV upload fails** | Ensure CSV has proper headers and target column |
-| **Target column missing** | Check CSV contains "Number of Doctors Visited" column |
-| **Deployment fails** | Ensure models/ directory is pushed to GitHub |
-
-## 16. Final Submission Checklist
-
-✅ GitHub repository link works
-✅ Streamlit app link opens correctly
-✅ App loads without errors
-✅ All 5 ML models implemented
-✅ All 6 evaluation metrics calculated
-✅ Model comparison table with results
-✅ Observations on model performance
-✅ Confusion matrix displays correctly
-✅ Classification report shows metrics
-✅ README content complete
-✅ requirements.txt with all packages
-✅ Test data (test_data.csv) included
-✅ Trained models saved (models/ directory)
-❌ BITS Lab screenshot (to be added)
-
----
-
-**Assignment Details**: M.Tech AIML/DSE, Work Integrated Learning Programme
-**Subject**: Machine Learning
-**Assignment**: Assignment 2 - Classification Models & Streamlit Deployment
-**Deadline**: 18 August 2026, 23:59 PM
-**Total Marks**: 15 (Model: 10 | App: 4 | Lab Screenshot: 1)
+- Dataset contains 714 instances, satisfying the minimum requirement of 500 instances.
+- Dataset contains 14 input features, satisfying the minimum requirement of 12 features.
+- Five required classification models are implemented:
+  1. Logistic Regression
+  2. Decision Tree Classifier
+  3. K-Nearest Neighbors Classifier
+  4. Gaussian Naive Bayes Classifier
+  5. Random Forest Classifier
+- Six evaluation metrics are reported:
+  Accuracy, AUC, Precision, Recall, F1 Score, and MCC.
+- Streamlit app includes CSV upload, target selection, model selection, confusion matrix, and classification report.
+- GitHub repository and live Streamlit app links are provided.
