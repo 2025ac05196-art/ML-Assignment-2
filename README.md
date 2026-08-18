@@ -6,7 +6,7 @@ The objective of this project is to build an interactive machine learning web ap
 
 ## 2. Dataset Description
 
-This project uses the NPHA (National Public Health Association) Doctor Visits classification dataset.
+This project uses the NPHA (National Poll on Healthy Aging) Doctor Visits classification dataset.
 
 - **Dataset Type**: Multi-class Classification
 - **Target Variable**: "Number of Doctors Visited" (Classification target)
@@ -72,7 +72,7 @@ Results of model evaluation on the NPHA Doctor Visits held-out test dataset:
 | **K-Nearest Neighbors** | Achieved moderate performance with accuracy of 0.4965. Performance is sensitive to feature scaling and K value. Could be improved with tuning. |
 | **Naive Bayes** | Lowest accuracy (0.2937) but surprisingly high AUC (0.6217). Feature independence assumption is violated. Strong ranking ability but poor hard classifications. |
 | **Random Forest** | Achieved accuracy of 0.5035 with reasonable AUC (0.5600). Ensemble approach provides stability, though below Logistic Regression. |
-| **Overall Winner for This Dataset** | **Logistic Regression** is the best model based on Accuracy (0.5524), F1 Score (0.4487), and MCC (0.1547). Recommended for deployment due to interpretability and efficiency. |
+| **Overall Winner for This Dataset** | **Logistic Regression** achieved the highest accuracy (0.5524) and MCC (0.1547). Although KNN achieved the highest F1 score (0.4683), Logistic Regression is selected as the overall preferred model because of its better overall accuracy, MCC, interpretability, and efficiency. |
 
 ## 9. Streamlit App Features
 
