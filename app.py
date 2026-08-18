@@ -127,6 +127,9 @@ def fit_and_evaluate(df, target_col, selected_model_name):
     X = df.drop(columns=[target_col])
     y_raw = df[target_col]
 
+    # Handle missing values in target
+    y_raw = y_raw.fillna(y_raw.mode()[0] if not y_raw.mode().empty else y_raw.iloc[0])
+
     # Encode target variable
     label_encoder = LabelEncoder()
     y = label_encoder.fit_transform(y_raw.astype(str))
@@ -194,12 +197,16 @@ def fit_and_evaluate(df, target_col, selected_model_name):
             st.warning(f"Error training {model_name}: {str(e)}")
             continue
 
-    selected_model = fitted_models.get(selected_model_name)
-    if selected_model is None:
-        raise ValueError(f"Could not train {selected_model_name}")
+    if selected_model_name not in fitted_models:
+        # Use the first trained model if selected one failed
+        selected_model_name = list(fitted_models.keys())[0] if fitted_models else None
+        
+    if selected_model_name is None or selected_model_name not in fitted_models:
+        raise ValueError("Could not train any model successfully")
 
+    selected_model = fitted_models[selected_model_name]
     metrics_df = pd.DataFrame(results)
-    return metrics_df, selected_model
+    return metrics_df, selected_model, selected_model_name
 
 
 # ============================================================================
@@ -235,6 +242,10 @@ with st.sidebar:
             st.warning("test_data.csv not found. Please upload a CSV file.")
 
     # If dataset is loaded, show settings
+    target_column = None
+    model_name = None
+    train_button = False
+    
     if dataset is not None and not dataset.empty:
         st.subheader("Dataset Settings")
         
@@ -260,9 +271,7 @@ with st.sidebar:
         # Train button
         train_button = st.button("🚀 Train & Evaluate Models", type="primary")
     else:
-        train_button = False
-        target_column = None
-        model_name = None
+        st.info("👈 Upload a CSV or use test data to get started")
 
 # ============================================================================
 # MAIN CONTENT
@@ -282,93 +291,111 @@ if dataset is not None and not dataset.empty:
     # Show missing values
     missing_info = dataset.isnull().sum()
     if missing_info.any():
-        st.warning(f"⚠️ Missing values detected in {missing_info[missing_info > 0].shape[0]} columns")
+        with st.expander("⚠️ Missing Values Info"):
+            st.dataframe(missing_info[missing_info > 0])
 
     # Validate target column
-    if target_column and dataset[target_column].nunique() < 2:
-        st.error("❌ The selected target column must contain at least two classes for classification.")
-    elif target_column and train_button:
-        # Train and evaluate
-        try:
-            with st.spinner("🔄 Training models... This may take a moment."):
-                metrics_table, selected = fit_and_evaluate(dataset, target_column, model_name)
-                model, X_test, y_test, y_pred, class_names = selected
+    if target_column:
+        unique_classes = dataset[target_column].nunique()
+        if unique_classes < 2:
+            st.error(f"❌ The selected target column has only {unique_classes} class(es). Classification requires at least 2 classes.")
+        elif train_button:
+            # Train and evaluate
+            try:
+                with st.spinner("🔄 Training models... This may take a moment."):
+                    metrics_table, selected, actual_model_name = fit_and_evaluate(dataset, target_column, model_name)
+                    model, X_test, y_test, y_pred, class_names = selected
 
-            # Model comparison metrics
-            st.subheader("📊 Model Comparison Metrics")
-            formatted_metrics = metrics_table.copy()
-            numeric_cols = ["Accuracy", "AUC", "Precision", "Recall", "F1 Score", "MCC"]
-            for col in numeric_cols:
-                if col in formatted_metrics.columns:
-                    formatted_metrics[col] = formatted_metrics[col].map(
-                        lambda x: "N/A" if pd.isna(x) else f"{x:.4f}"
-                    )
-            st.dataframe(formatted_metrics, use_container_width=True)
+                # Model comparison metrics
+                st.subheader("📊 Model Comparison Metrics")
+                formatted_metrics = metrics_table.copy()
+                numeric_cols = ["Accuracy", "AUC", "Precision", "Recall", "F1 Score", "MCC"]
+                for col in numeric_cols:
+                    if col in formatted_metrics.columns:
+                        formatted_metrics[col] = formatted_metrics[col].map(
+                            lambda x: "N/A" if pd.isna(x) else f"{x:.4f}"
+                        )
+                st.dataframe(formatted_metrics, use_container_width=True)
 
-            # Download results
-            csv = metrics_table.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Metrics CSV",
-                data=csv,
-                file_name="model_comparison_metrics.csv",
-                mime="text/csv"
-            )
-
-            # Detailed results for selected model
-            st.subheader(f"🔍 Detailed Results: {model_name}")
-
-            # Confusion Matrix
-            cm = confusion_matrix(y_test, y_pred)
-            cm_df = pd.DataFrame(cm, index=class_names, columns=class_names)
-
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write("**Confusion Matrix**")
-                st.dataframe(cm_df, use_container_width=True)
-                
-                # Visualize confusion matrix
-                fig, ax = plt.subplots(figsize=(6, 4))
-                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax,
-                           xticklabels=class_names, yticklabels=class_names)
-                ax.set_xlabel("Predicted")
-                ax.set_ylabel("Actual")
-                ax.set_title(f"Confusion Matrix - {model_name}")
-                st.pyplot(fig, use_container_width=True)
-
-            with col2:
-                st.write("**Classification Report**")
-                report = classification_report(
-                    y_test, y_pred,
-                    target_names=class_names,
-                    zero_division=0,
-                    output_dict=True
+                # Download results
+                csv = metrics_table.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Metrics CSV",
+                    data=csv,
+                    file_name="model_comparison_metrics.csv",
+                    mime="text/csv"
                 )
-                report_df = pd.DataFrame(report).transpose()
-                st.dataframe(report_df, use_container_width=True)
 
-            # Individual model metrics
-            st.subheader(f"📈 {model_name} Performance Metrics")
-            selected_metrics = metrics_table[metrics_table["ML Model Name"] == model_name].iloc[0]
-            
-            metric_col1, metric_col2, metric_col3 = st.columns(3)
-            metric_col1.metric("Accuracy", f"{selected_metrics['Accuracy']:.4f}")
-            metric_col2.metric("F1 Score", f"{selected_metrics['F1 Score']:.4f}")
-            metric_col3.metric("AUC Score", f"{selected_metrics['AUC']:.4f}")
+                # Detailed results for selected model
+                st.subheader(f"🔍 Detailed Results: {actual_model_name}")
 
-            metric_col4, metric_col5, metric_col6 = st.columns(3)
-            metric_col4.metric("Precision", f"{selected_metrics['Precision']:.4f}")
-            metric_col5.metric("Recall", f"{selected_metrics['Recall']:.4f}")
-            metric_col6.metric("MCC", f"{selected_metrics['MCC']:.4f}")
+                # Get predictions and confusion matrix
+                cm = confusion_matrix(y_test, y_pred)
+                
+                # Ensure confusion matrix dimensions match class names
+                num_classes = len(class_names)
+                if cm.shape[0] != num_classes or cm.shape[1] != num_classes:
+                    st.warning(f"Note: Expected {num_classes}x{num_classes} confusion matrix, got {cm.shape}")
+                    # Pad the confusion matrix if needed
+                    cm_padded = np.zeros((num_classes, num_classes), dtype=int)
+                    min_dim = min(cm.shape[0], cm.shape[1], num_classes)
+                    cm_padded[:min_dim, :min_dim] = cm[:min_dim, :min_dim]
+                    cm = cm_padded
+                
+                cm_df = pd.DataFrame(cm, index=class_names, columns=class_names)
 
-            st.success("✅ Evaluation completed successfully!")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.write("**Confusion Matrix**")
+                    st.dataframe(cm_df, use_container_width=True)
+                    
+                    # Visualize confusion matrix
+                    fig, ax = plt.subplots(figsize=(6, 4))
+                    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax,
+                               xticklabels=class_names, yticklabels=class_names)
+                    ax.set_xlabel("Predicted")
+                    ax.set_ylabel("Actual")
+                    ax.set_title(f"Confusion Matrix - {actual_model_name}")
+                    st.pyplot(fig, use_container_width=True)
 
-        except Exception as exc:
-            st.error("❌ Unable to train/evaluate models.")
-            st.error(f"Error Details: {str(exc)}")
-            st.exception(exc)
-    elif not train_button:
-        st.info("👆 Click the '🚀 Train & Evaluate Models' button in the sidebar to start training.")
+                with col2:
+                    st.write("**Classification Report**")
+                    try:
+                        report = classification_report(
+                            y_test, y_pred,
+                            target_names=class_names,
+                            zero_division=0,
+                            output_dict=True
+                        )
+                        report_df = pd.DataFrame(report).transpose()
+                        st.dataframe(report_df, use_container_width=True)
+                    except Exception as e:
+                        st.warning(f"Could not generate classification report: {e}")
+
+                # Individual model metrics
+                st.subheader(f"📈 {actual_model_name} Performance Metrics")
+                selected_metrics = metrics_table[metrics_table["ML Model Name"] == actual_model_name].iloc[0]
+                
+                metric_col1, metric_col2, metric_col3 = st.columns(3)
+                metric_col1.metric("Accuracy", f"{selected_metrics['Accuracy']:.4f}")
+                metric_col2.metric("F1 Score", f"{selected_metrics['F1 Score']:.4f}")
+                metric_col3.metric("AUC Score", f"{selected_metrics['AUC']:.4f}")
+
+                metric_col4, metric_col5, metric_col6 = st.columns(3)
+                metric_col4.metric("Precision", f"{selected_metrics['Precision']:.4f}")
+                metric_col5.metric("Recall", f"{selected_metrics['Recall']:.4f}")
+                metric_col6.metric("MCC", f"{selected_metrics['MCC']:.4f}")
+
+                st.success("✅ Evaluation completed successfully!")
+
+            except Exception as exc:
+                st.error("❌ Unable to train/evaluate models.")
+                st.error(f"Error Details: {str(exc)}")
+                with st.expander("📋 Full Error Traceback"):
+                    st.exception(exc)
+        else:
+            st.info(f"👆 Select a model and click '🚀 Train & Evaluate Models' to start (Classes: {unique_classes})")
 else:
     st.warning("📁 Please upload a CSV file or select test data from the sidebar to begin.")
 
